@@ -151,13 +151,47 @@ int mtsuite_run_one(
     return (int)outcome;
 }
 
+// ---
+int mtsuite_set_flag(
+    struct Testgroup_t *groups, const char *arg, int set, unsigned long flag
+){
+    int i, j;
+    size_t len = MTSUITE_MAX_NAMELEN;
+    char fullname[MTSUITE_MAX_NAMELEN];
+    int found = 0;
+    if(strstr(arg, "..")){
+        len = strstr(arg, "..") - arg;
+    }
+    for(i=0; groups[i].prefix; ++i){
+        for(j=0; groups[i].cases[j].name; ++j){
+            Testcase_t *tcase = &groups[i].cases[j];
+            snprintf(
+                fullname, sizeof(fullname), "%s%s",
+                groups[i].prefix, tcase->name
+            );
+            if(!flag){
+                printf("    %s ", fullname);
+                if(tcase->flags & MTSUITE_OFF_BY_DEFAULT){
+                    puts("   (Off by default)");
+                }else if(tcase->flags & MTSUITE_SKIP){
+                    puts("   (DISABLED)");
+                }else{ puts("");}
+            }if(!strncmp(fullname, arg, len)){
+                if(set){tcase->flags |= flag;}
+                else{ tcase->flags &= ~flag; }
+                ++found;
+            }
+        }
+    }
+
+    return found;
+}
 // 
 int mtsuite_cur_test_has_failed(void){}
 void mtsuite_set_test_failed(void){}
 void mtsuite_set_test_skipped(void){}
 int mtsuite_get_verbosity(void){}
-int mtsuite_set_flag(
-    struct Testgroup_t *group, const char *x, int set, unsigned long y){}
+
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
 
 
