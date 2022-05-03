@@ -186,6 +186,19 @@ int mtsuite_set_flag(
 
     return found;
 }
+
+static void usage(Testgroup_t *groups, int list_groups){
+    puts("Options are: [--verbose|--quiet|--terse]");
+    puts("  Specify tests by name, or using a prefix ending with '..'");
+    puts("  To skip a test, prefix its name with a colon.");
+    puts("  To enable a disabled test, prefix its name with a plus.");
+    puts("  Use --list-test for a list of tests.");
+    if(list_groups){
+        puts("Known tests are:");
+        mtsuite_set_flag(groups, "..", 1, 0);
+    }
+    exit(0);
+}
 // 
 int mtsuite_cur_test_has_failed(void){}
 void mtsuite_set_test_failed(void){}
