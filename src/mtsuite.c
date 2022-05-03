@@ -219,7 +219,28 @@ static int process_test_alias(Testgroup_t *groups, const char *test){
 }
 
 static int process_test_option(Testgroup_t *groups, const char *test){
+    int flag = MTSUITE_ENABLED;
+    int n = 0;
+    if(test[0] == '@'){
+        return process_test_alias(groups, test+1);
+    }else if(test[0] == ':'){
+        ++test;
+        flag = MTSUITE_SKIP;
+    }else if(test[0] == '+'){
+        ++test;
+        ++n;
+        if(!mtsuite_set_flag(groups, test, 0, MTSUITE_OFF_BY_DEFAULT)){
+            printf("No such test as %s!\n", test);
+            return -1;
+        }
+    }else{ ++ n; }
 
+    if(!mtsuite_set_flag(groups, test, 1, flag)){
+        printf("No such test as %s!\n", test);
+        return -1;
+    }
+
+    return n;
 }
 // 
 int mtsuite_cur_test_has_failed(void){}
