@@ -242,6 +242,12 @@ static int process_test_option(Testgroup_t *groups, const char *test){
 
     return n;
 }
+
+//
+void mtsuite_set_aliases(const struct TestlistAlias_t *aliases){
+    cfg_aliases = aliases;
+}
+
 // 
 int mtsuite_cur_test_has_failed(void){}
 void mtsuite_set_test_failed(void){}
@@ -249,7 +255,4 @@ void mtsuite_set_test_skipped(void){}
 int mtsuite_get_verbosity(void){}
 
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
-
-
-void mtsuite_set_aliases(const struct TestlistAlias_t *aliases){}
 int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){}
