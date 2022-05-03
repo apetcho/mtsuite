@@ -249,10 +249,64 @@ void mtsuite_set_aliases(const struct TestlistAlias_t *aliases){
 }
 
 // 
+int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){
+    int i, j, n = 0;
+    for(i=1; i < argc; ++i){
+        if(argv[i][0] == '-'){
+            if(!strcmp(argv[i], "--quiet")){
+                opt_verbosity = -1;
+                verbosity_flag = "--quiet";
+            }else if(!strcmp(argv[i], "--verbose")){
+                opt_verbosity = 2;
+                verbosity_flag = "--verbose";
+            }else if(!strcmp(argv[i], "--terse")){
+                opt_verbosity = 0;
+                verbosity_flag = "--terse";
+            }else if(!strcmp(argv[i], "--help")){
+                usage(groups, 0);
+            }else{
+                printf("Unknown option %s. Try --help\n", argv[i]);
+                return -1;
+            }
+        }else{
+            int r = process_test_option(groups, argv[i]);
+            if(r < 0){ return -1; }
+            n += r;
+        }
+    }
+    if(!n){
+        mtsuite_set_flag(groups, "..", 1, MTSUITE_ENABLED);
+    }
+
+#ifdef _IONBF
+    setvbuf(stdout, NULL, _IOFBF, 0);
+#endif
+
+    ++in_mtsuite_main;
+    for(i=0; groups[i].prefix; ++i){
+        for(j=0; groups[i].cases[j].flags & MTSUITE_ENABLED){
+            mtsuite_run_one(&groups[i], &groups[i].cases[j]);
+        }
+    }
+
+    --in_mtsuite_main;
+    if(opt_verbosity==0){ puts(""); }
+    if(n_bad){
+        printf(
+            "%d/%d TESTS FAILED. (%d skipped)\n", n_bad,
+            n_bad+n_ok, n_skipped
+        );
+    }else if(opt_verbosity >= 1){
+        printf("%d tests ok. (%d skipped)\n", n_ok, n_skipped);
+    }
+
+    return (n_bad == 0) ? 0 : 1;
+}
+
+// 
 int mtsuite_cur_test_has_failed(void){}
 void mtsuite_set_test_failed(void){}
 void mtsuite_set_test_skipped(void){}
 int mtsuite_get_verbosity(void){}
-
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
-int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){}
+
