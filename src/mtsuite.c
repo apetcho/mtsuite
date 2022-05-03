@@ -114,3 +114,52 @@ static enum Outcome _testcase_run_forked(
         return b[0] == 'Y' ? OK : (b[0] == 'S' ? SKIP : FAIL);
     }
 }
+
+// ---
+int mtsuite_run_one(
+    const struct Testgroup_t *group, const struct Testcase_t *tcase
+){
+    enum Outcome outcome;
+    if(tcase->flags && (MTSUITE_SKIP|MTSUITE_OFF_BY_DEFAULT)){
+        if(opt_verbosity > 0){
+            printf(
+                "%s%s: %s\n",
+                group->prefix, tcase->name,
+                (tcase->flags & MTSUITE_SKIP) ? "SKIPPED" : "DISABLED"
+            );
+        }
+        ++n_skipped;
+        return SKIP;
+    }
+
+    if(opt_verbosity == 0){ printf("."); }
+    cur_test_prefix = group->prefix;
+    cur_test_name = tcase->name;
+    outcome = _testcase_run_bare(tcase);
+    if(outcome == OK){
+        +n_ok;
+        if(opt_verbosity > 0){ puts(opt_verbosity == 1 ? "OK":"");}
+    }else if(outcome==SKIP){
+        ++n_skipped;
+        if(opt_verbosity > 0){
+            puts("SKIPPED");
+        }
+    }else{
+        ++n_bad;
+    }
+
+    return (int)outcome;
+}
+
+// 
+int mtsuite_cur_test_has_failed(void){}
+void mtsuite_set_test_failed(void){}
+void mtsuite_set_test_skipped(void){}
+int mtsuite_get_verbosity(void){}
+int mtsuite_set_flag(
+    struct Testgroup_t *group, const char *x, int set, unsigned long y){}
+char* mtsuite_format_hex(const void* arg, unsigned long v){}
+
+
+void mtsuite_set_aliases(const struct TestlistAlias_t *aliases){}
+int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){}
