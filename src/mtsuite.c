@@ -199,6 +199,28 @@ static void usage(Testgroup_t *groups, int list_groups){
     }
     exit(0);
 }
+
+
+static int process_test_alias(Testgroup_t *groups, const char *test){
+    int i, j, n, r;
+    for(i=0; cfg_aliases && cfg_aliases[i].name; ++i){
+        if(!strcmp(cfg_aliases[i].name, test)){
+            n = 0;
+            for(j=0; cfg_aliases[i].tests[j]; ++j){
+                r = process_test_option(groups, cfg_aliases[i].tests[j]);
+                if(r < 0){ return -1; }
+                n += r;
+            }
+            return n;
+        }
+    }
+
+    printf("No such test alias as @%s!", test);
+}
+
+static int process_test_option(Testgroup_t *groups, const char *test){
+
+}
 // 
 int mtsuite_cur_test_has_failed(void){}
 void mtsuite_set_test_failed(void){}
