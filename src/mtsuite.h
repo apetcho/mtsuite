@@ -15,7 +15,7 @@ typedef void (*TCallbackFn_t)(void*);
 struct Testcase_t;
 
 struct TestcaseSetup_t {
-    void* (setup)(const struct Testcase_t *);
+    void* (*setup)(const struct Testcase_t *);
     int (*cleanup)(const struct Testcase_t *, void *);
 };
 
