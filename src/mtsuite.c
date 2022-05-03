@@ -1,5 +1,8 @@
 #include<stdlib.h>
 #include<assert.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<unistd.h>
 // NO_FORKING not considered
 #include "mtsuite.h"
 
@@ -52,4 +55,62 @@ static enum Outcome _testcase_run_bare(const Testcase_t *tcase){
     }
 
     return outcome;
+}
+
+#define MTSUITE_MAGIC_EXIT_CODE 42
+
+
+static enum Outcome _testcase_run_forked(
+    const Testgroup_t* group, const Testcase_t *tcase
+){
+    int outpipe[2];
+    pid_t pid;
+    if(pipe(outpipe)){
+        perror("opening pipe");
+    }
+
+    if(opt_verbosity > 0){
+        printf("[forking] ");
+    }
+    pid = fork();
+    if(!pid){
+        /* child */
+        int testr, writer;
+        char b[1];
+        close(outpipe[0]);
+        testr = _testcase_run_bare(tcase);
+        assert(0<=(int)testr && (int)testr<= 2);
+        b[0] = "NYS"[testr];
+        writer = (int)write(outpipe[1], b, 1);
+        if(writer != 1){
+            perror("write outcome to pipe");
+            exit(1);
+        }
+        exit(0);
+        return FAIL; /* unreachable */
+    }else{
+        /* parent */
+        int status, r;
+        char b[1];
+        close(outpipe[1]);
+        r = (int)read(outpipe[0], b, 1);
+        if(r == 0){
+            printf("[Lost connection!] ");
+            return FAIL;
+        }else if(r != 1){
+            perror("read outcome from pipe");
+        }
+        r = waitpid(pid, &status, 0);
+        close(outpipe[0]);
+        if(r == -1){
+            perror("waitpid");
+            return FAIL;
+        }
+        if(!WIFEXITED(status) || WEXITSTATUS(status) != 0){
+            printf("[did not exit cleanly.]");
+            return FAIL;
+        }
+
+        return b[0] == 'Y' ? OK : (b[0] == 'S' ? SKIP : FAIL);
+    }
 }
