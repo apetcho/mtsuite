@@ -303,10 +303,12 @@ int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){
     return (n_bad == 0) ? 0 : 1;
 }
 
+//
+int mtsuite_get_verbosity(void){ return opt_verbosity; }
+
 // 
 int mtsuite_cur_test_has_failed(void){}
 void mtsuite_set_test_failed(void){}
 void mtsuite_set_test_skipped(void){}
-int mtsuite_get_verbosity(void){}
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
 
