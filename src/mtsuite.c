@@ -306,9 +306,22 @@ int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){
 //
 int mtsuite_get_verbosity(void){ return opt_verbosity; }
 
+// --
+void mtsuite_set_test_failed(void){
+    if(opt_verbosity <= 0 && cur_test_name){
+        if(opt_verbosity==0){ puts("");}
+        printf("%s%s: ", cur_test_prefix, cur_test_name);
+        cur_test_name = NULL;
+    }
+    cur_test_outcome = 0;
+}
+
 // 
-int mtsuite_cur_test_has_failed(void){}
-void mtsuite_set_test_failed(void){}
+int mtsuite_cur_test_has_failed(void){
+}
+
+
+
 void mtsuite_set_test_skipped(void){}
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
 
