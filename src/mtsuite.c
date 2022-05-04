@@ -10,7 +10,7 @@
 
 typedef struct Testcase_t Testcase_t;
 typedef struct Testgroup_t Testgroup_t;
-typedef struct TestcaseAlias_t TestcaseAlias_t;
+typedef struct TestlistAlias_t TestlistAlias_t;
 typedef struct TestcaseSetup_t TestcaseSetup_t;
 
 static int in_mtsuite_main = 0;
@@ -21,7 +21,7 @@ static int n_skipped = 0;
 static int opt_verbosity = 1;  /* quiet=<0, terse=1, normal=1, verbose=2 */
 static const char *verbosity_flag = "";
 
-static const TestcaseAlias_t *cfg_aliases = NULL;
+static const TestlistAlias_t *cfg_aliases = NULL;
 
 enum Outcome {SKIP=2, OK=1, FAIL=0 };
 static enum Outcome cur_test_outcome = 0;
@@ -120,7 +120,7 @@ int mtsuite_run_one(
     const struct Testgroup_t *group, const struct Testcase_t *tcase
 ){
     enum Outcome outcome;
-    if(tcase->flags && (MTSUITE_SKIP|MTSUITE_OFF_BY_DEFAULT)){
+    if(tcase->flags & (MTSUITE_SKIP|MTSUITE_OFF_BY_DEFAULT)){
         if(opt_verbosity > 0){
             printf(
                 "%s%s: %s\n",
@@ -137,7 +137,7 @@ int mtsuite_run_one(
     cur_test_name = tcase->name;
     outcome = _testcase_run_bare(tcase);
     if(outcome == OK){
-        +n_ok;
+        ++n_ok;
         if(opt_verbosity > 0){ puts(opt_verbosity == 1 ? "OK":"");}
     }else if(outcome==SKIP){
         ++n_skipped;
@@ -216,6 +216,7 @@ static int process_test_alias(Testgroup_t *groups, const char *test){
     }
 
     printf("No such test alias as @%s!", test);
+    return -1;
 }
 
 static int process_test_option(Testgroup_t *groups, const char *test){
@@ -249,7 +250,7 @@ void mtsuite_set_aliases(const struct TestlistAlias_t *aliases){
 }
 
 // 
-int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){
+int mtsuite_main(int argc, char **argv, struct Testgroup_t *groups){
     int i, j, n = 0;
     for(i=1; i < argc; ++i){
         if(argv[i][0] == '-'){
@@ -284,8 +285,10 @@ int mtsuite_main(int argc, const char **argv, struct Testgroup_t *groups){
 
     ++in_mtsuite_main;
     for(i=0; groups[i].prefix; ++i){
-        for(j=0; groups[i].cases[j].flags & MTSUITE_ENABLED){
-            mtsuite_run_one(&groups[i], &groups[i].cases[j]);
+        for(j=0; groups[i].cases[j].flags; ++j){
+            if(groups[i].cases[j].flags & MTSUITE_ENABLED){
+                mtsuite_run_one(&groups[i], &groups[i].cases[j]);
+            }
         }
     }
 
