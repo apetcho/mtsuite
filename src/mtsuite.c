@@ -316,12 +316,14 @@ void mtsuite_set_test_failed(void){
     cur_test_outcome = 0;
 }
 
+// ---
+void mtsuite_set_test_skipped(void){
+    if(cur_test_outcome==OK){cur_test_outcome = SKIP; }
+}
+
 // 
 int mtsuite_cur_test_has_failed(void){
 }
 
-
-
-void mtsuite_set_test_skipped(void){}
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
 
