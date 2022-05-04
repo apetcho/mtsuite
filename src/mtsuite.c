@@ -326,5 +326,31 @@ int mtsuite_cur_test_has_failed(void){
     return (cur_test_outcome == FAIL);
 }
 
-char* mtsuite_format_hex(const void* arg, unsigned long v){}
+// ---
+char* mtsuite_format_hex(const void *val, unsigned long len){
+    const unsigned char *value = val;
+    char *result;
+    char *cursor;
+    size_t i;
+    int ellipses = 0;
+    if(!value){ return strdup("null");}
+    if(len > 1024){
+        ellipses = 3;
+        len = 1024;
+    }
+    if(!(result = malloc(len*2 + 4))){
+        return strdup("<allocation failure>");
+    }
+    cursor = result;
+    for(i=0; i < len; ++i){
+        *cursor++ = "0123456789ABCDE"[(value[i] >> 4)&0x0f];
+        *cursor++ = "0123456789ABCDE"[value[i]&0x0f];
+    }
+    while(ellipses--){
+        *cursor++ = '.';
+    }
+    *cursor = 0;
+
+    return result;
+}
 
