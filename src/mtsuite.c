@@ -323,6 +323,7 @@ void mtsuite_set_test_skipped(void){
 
 // 
 int mtsuite_cur_test_has_failed(void){
+    return (cur_test_outcome == FAIL);
 }
 
 char* mtsuite_format_hex(const void* arg, unsigned long v){}
